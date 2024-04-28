@@ -1,0 +1,69 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 2024/04/10 22:10:32
+// Design Name: 
+// Module Name: tb_pll
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module tb_pll();
+reg clk; 
+reg rst;
+reg key;
+
+wire clk_12M5;
+wire clk_50M;
+wire [13:0] sin_signal;
+wire [11:0] signal_o;
+
+/* initial block*/
+initial begin
+  clk = 1'b1;
+  rst = 1'b1;
+  key = 1'b1;
+  #(30*10);
+  rst = 1'b0;
+end
+/* always block*/
+always #5  clk = ~clk; // 1M
+
+clk_wiz_0 instance_name
+   (
+    // Clock out ports
+    .clk_out1(clk_12M5),     // output clk_out1
+    .clk_out2(clk_50M),     // output clk_out2
+    // Status and control signals
+    .resetn(~rst), // input resetn
+   // Clock in ports
+    .clk_in1(clk)
+ );      // input clk_in1
+ 
+dds_gen dds_gen_initial(
+    .clk (clk_50M),
+    .rst (~rst),
+    .key (key),
+    .dout(sin_signal)
+);
+
+iir_filter iir_filter_initial(
+    .clk        (clk_12M5),
+    .rst        (rst),
+    .signal_i   ({{3{sin_signal[13]}},sin_signal[13:4]}), // 这里为了防止溢出
+    .signal_o   (signal_o)
+    );
+endmodule
+
